@@ -8,8 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
-class RouteServiceProvider extends ServiceProvider
-{
+class RouteServiceProvider extends ServiceProvider {
     /**
      * The path to your application's "home" route.
      *
@@ -19,11 +18,14 @@ class RouteServiceProvider extends ServiceProvider
      */
     public const HOME = '/dashboard';
 
+    public const OWNER_HOME = '/owner/dashboard';
+
+    public const ADMIN_HOME = '/admin/dashboard';
+
     /**
      * Define your route model bindings, pattern filters, and other route configuration.
      */
-    public function boot(): void
-    {
+    public function boot(): void {
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
@@ -33,8 +35,17 @@ class RouteServiceProvider extends ServiceProvider
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
 
-            Route::middleware('web')
+            Route::prefix('/')->middleware('web')
+                ->as('user.')
                 ->group(base_path('routes/web.php'));
+
+            Route::prefix('owner')->middleware('web')
+                ->as('owner.')
+                ->group(base_path('routes/owner.php'));
+
+            Route::prefix('admin')->middleware('web')
+                ->as('admin.')
+                ->group(base_path('routes/admin.php'));
         });
     }
 }
